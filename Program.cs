@@ -11,101 +11,56 @@ namespace redis_autocomplete
     // Inspired by http://oldblog.antirez.com/post/autocomplete-with-redis.html
     class Program
     {
-        const string key = "completion";
-
         // dotnet add package StackExchange.Redis
         static void Main(string[] args)
-        {ss
-        
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost");
-            IDatabase db = redis.GetDatabase();
+        {
+            // ConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
 
-            // string[] words =  { "bar", "foo", "foobar" };
+            var connection = RedisConnectionFactory.Connection;
+            IDatabase database = connection.GetDatabase();
 
-            string[] words =  File.ReadAllLines("female-names.txt");
+            IWordService wordService = new FileWordService("female-names.txt");
 
-            if (!db.KeyExists(key))
+            ICompletionService completionService = new RedisCompletionService(database);
+
+            if (!completionService.Exists)
             {
-                Console.WriteLine("Loading entries to the Redis DB...");
+                Console.WriteLine("Loading entries...");
 
-                Create(db, words);
+                IEnumerable<string> words = wordService.Get();
+
+                completionService.AddRange(words);
             }
-            else
-            {
-                Console.WriteLine($"NOT loading entries, there is already a '{key}' key");
-            }
-            
+
             string prefix;
+
             do
             {
-                System.Console.Write("Type prefix: ");
-                prefix = Console.ReadLine(); 
+                Console.Write("Type prefix: ");
 
-                var autocompleteWords = Complete(db, prefix);
+                prefix = Console.ReadLine();
 
-                foreach(var word in autocompleteWords)
+                var autocompleteWords = completionService.Get(prefix);
+
+                foreach (var word in autocompleteWords)
                 {
-                    System.Console.WriteLine(word);
+                    Console.WriteLine(word);
                 }
 
-            } 
-            while(prefix!=string.Empty);
-            
-        }
-
-        static void Create(IDatabase db, string[] words)
-        {
-            foreach(string word in words)
-            {
-                for(int l=1; l < word.Length; l++)
-                {
-                    string prefix = word.Substring(0, l);
-                    // ZADD key prefix
-                    db.SortedSetAdd(key, member: prefix, score: 0);
-                }
-
-                // ZADD key foo*
-                db.SortedSetAdd(key, member: $"{word}*", score: 0);
             }
-        }
+            while (prefix != string.Empty);
 
-        static string[] Complete(IDatabase db, string prefix)
-        {
-            const int rangelen = 50; // This is not random, try to get replies < MTU size
-
-            IList<string> results = new List<string>();
-
-            // ZRANK key fo
-            long? start = db.SortedSetRank(key, prefix);
-
-            if (!start.HasValue)
-            {
-                return results.ToArray();
-            }
- 
-            // ZRANGE key 6 -1
-            var range = db.SortedSetRangeByRank(key, start.Value, start.Value + rangelen - 1);
-            start += rangelen;
-
-            foreach(string entry in range)
-            {
-                int minlen = Min(entry.Length, prefix.Length);
-
-                if (entry.Substring(0, minlen) != prefix.Substring(0, minlen))
-                {
-                    break;
-                }
-
-                if (entry.EndsWith("*"))
-                {
-                    string word = entry.Substring(0, entry.Length-1);
-                    results.Add(word);
-                }    
-            }
-
-            return results.ToArray();
         }
     }
 
-   
+    public class RedisConnectionFactory
+    {
+
+        private static readonly Lazy<ConnectionMultiplexer> connection = new Lazy<ConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
+
+        public static ConnectionMultiplexer Connection => connection.Value;
+
+    }
 }
+
+  
