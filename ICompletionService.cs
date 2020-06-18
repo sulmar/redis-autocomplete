@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace redis_autocomplete
@@ -7,7 +8,7 @@ namespace redis_autocomplete
     {
         bool Exists { get; }
         void Add(string word);
-        void AddRange(IEnumerable<string> words);
+        void AddRange(IEnumerable<string> words, IProgress<string> progress = default);
         public IEnumerable<string> Get(string prefix);
     }
 }

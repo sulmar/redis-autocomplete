@@ -29,8 +29,14 @@ namespace redis_autocomplete
 
                 IEnumerable<string> words = wordService.Get();
 
-                completionService.AddRange(words);
+                IProgress<string> progress = new Progress<string>(word => Console.Write($",{word}"));
+
+                completionService.AddRange(words, progress);
             }
+
+
+            Console.WriteLine("----------------");
+
 
             string prefix;
 

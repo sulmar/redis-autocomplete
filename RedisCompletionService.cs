@@ -1,4 +1,5 @@
 ﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using static System.Math;
 
@@ -16,11 +17,12 @@ namespace redis_autocomplete
 
         public bool Exists => db.KeyExists(key);
 
-        public void AddRange(IEnumerable<string> words)
+        public void AddRange(IEnumerable<string> words, IProgress<string> progress = default)
         {
             foreach (string word in words)
             {
                 Add(word);
+                progress?.Report(word);
             }
         }
 
