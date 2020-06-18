@@ -15,7 +15,7 @@ namespace redis_autocomplete
 
         // dotnet add package StackExchange.Redis
         static void Main(string[] args)
-        {
+        {ss
         
             ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost");
             IDatabase db = redis.GetDatabase();
