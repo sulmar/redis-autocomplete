@@ -4,19 +4,19 @@ Inspired by Auto Complete with Redis
 http://oldblog.antirez.com/post/autocomplete-with-redis.html
 
 
-## Utworzenie us³ugi
+## Create instance
 ~~~ csharp
 ConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
 ICompletionService completionService = new RedisCompletionService(database);
 ~~~
 
-## Za³adowanie s³ów do s³ownika
+## Load words to dictionary
 ~~~ csharp
 string[] words = { "bar", "foo", "foobar" };
 completionService.AddRange(words);
 ~~~
 
-## Wyszukiwanie 
+## Autocomplete 
 ~~~ csharp
 var autocompleteWords = completionService.Get(prefix);
 
