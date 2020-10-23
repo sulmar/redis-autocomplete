@@ -6,7 +6,8 @@ http://oldblog.antirez.com/post/autocomplete-with-redis.html
 
 ## Create instance
 ~~~ csharp
-ConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
+IConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
+IDatabase database = connection.GetDatabase();
 ICompletionService completionService = new RedisCompletionService(database);
 ~~~
 
