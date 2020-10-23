@@ -14,9 +14,9 @@ namespace redis_autocomplete
         // dotnet add package StackExchange.Redis
         static void Main(string[] args)
         {
-            // ConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
+            // IConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
 
-            var connection = RedisConnectionFactory.Connection;
+            IConnectionMultiplexer connection = RedisConnectionFactory.Connection;
             IDatabase database = connection.GetDatabase();
 
             IWordService wordService = new FileWordService("female-names.txt");
@@ -62,9 +62,9 @@ namespace redis_autocomplete
     public class RedisConnectionFactory
     {
 
-        private static readonly Lazy<ConnectionMultiplexer> connection = new Lazy<ConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
+        private static readonly Lazy<IConnectionMultiplexer> connection = new Lazy<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("localhost"));
 
-        public static ConnectionMultiplexer Connection => connection.Value;
+        public static IConnectionMultiplexer Connection => connection.Value;
 
     }
 }
