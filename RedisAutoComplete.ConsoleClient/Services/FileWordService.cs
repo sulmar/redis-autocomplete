@@ -15,7 +15,7 @@ namespace redis_autocomplete
 
         public IEnumerable<string> Get()
         {
-            return File.ReadAllLines("female-names.txt");
+            return File.ReadAllLines(filename);
         }
     }
 }

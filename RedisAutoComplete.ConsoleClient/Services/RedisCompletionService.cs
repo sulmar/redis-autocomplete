@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using static System.Math;
+using System.Linq;
 
 namespace redis_autocomplete
 {
@@ -9,6 +9,9 @@ namespace redis_autocomplete
     {
         private readonly IDatabase db;
         private const string key = "completion";
+
+        private const int rangelen = 50; // This is not random, try to get replies < MTU size
+
 
         public RedisCompletionService(IDatabase db)
         {
@@ -41,39 +44,29 @@ namespace redis_autocomplete
 
         public IEnumerable<string> Get(string prefix)
         {
-            const int rangelen = 50; // This is not random, try to get replies < MTU size
-
-            IList<string> results = new List<string>();
-
             // ZRANK key fo
             long? start = db.SortedSetRank(key, prefix);
 
-            if (!start.HasValue)
+            if (start.HasValue)
             {
+                // ZRANGE key 6 -1
+                var range = db.SortedSetRangeByRank(key, start.Value, start.Value + rangelen - 1);
+
+                var results = range
+                    .Select(entry => entry.ToString())
+                    .Where(entry => entry.StartsWith(prefix))
+                    .Where(entry => entry.EndsWith("*"))
+                    .Select(entry => entry.RemoveLast());
+
                 return results;
             }
-
-            // ZRANGE key 6 -1
-            var range = db.SortedSetRangeByRank(key, start.Value, start.Value + rangelen - 1);
-            start += rangelen;
-
-            foreach (string entry in range)
-            {
-                int minlen = Min(entry.Length, prefix.Length);
-
-                if (entry.Substring(0, minlen) != prefix.Substring(0, minlen))
-                {
-                    break;
-                }
-
-                if (entry.EndsWith("*"))
-                {
-                    string word = entry.Substring(0, entry.Length - 1);
-                    results.Add(word);
-                }
-            }
-
-            return results;
+            else
+                return Enumerable.Empty<string>();
         }
+    }
+
+    public static class StringExtensions
+    {
+        public static string RemoveLast(this string value) => value.Remove(value.Length - 1, 1);
     }
 }
