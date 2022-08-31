@@ -7,15 +7,17 @@ namespace redis_autocomplete
 {
     public class RedisCompletionService : ICompletionService
     {
-        private readonly IDatabase db;
+        
+        private readonly IConnectionMultiplexer connection;
         private const string key = "completion";
+        private IDatabase db => connection.GetDatabase();
 
         private const int rangelen = 50; // This is not random, try to get replies < MTU size
 
 
-        public RedisCompletionService(IDatabase db)
-        {
-            this.db = db;
+        public RedisCompletionService(IConnectionMultiplexer connection)
+        {            
+            this.connection = connection;
         }
 
         public bool Exists => db.KeyExists(key);

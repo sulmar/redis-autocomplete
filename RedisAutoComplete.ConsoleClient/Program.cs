@@ -10,15 +10,18 @@ namespace redis_autocomplete
     {
         // dotnet add package StackExchange.Redis
         static void Main(string[] args)
-        {
-            IConnectionMultiplexer connection = ConnectionMultiplexer.Connect("127.0.0.1");
+        {            
+            const string host = "127.0.0.1";
 
-            //IConnectionMultiplexer connection = RedisConnectionFactory.Connection;
-            IDatabase database = connection.GetDatabase(7);
+            Console.WriteLine($"Connecting to {host}...");
+            IConnectionMultiplexer connection = ConnectionMultiplexer.Connect(host);
 
-            IWordService wordService = new FileWordService("female-names.txt");
+            Console.WriteLine("Connected.");
 
-            ICompletionService completionService = new RedisCompletionService(database);
+            // IWordService wordService = new FileWordService("female-names.txt");
+            IWordService wordService = new FileWordService("cities.txt");
+
+            ICompletionService completionService = new RedisCompletionService(connection);
 
             if (!completionService.Exists)
             {
@@ -45,9 +48,10 @@ namespace redis_autocomplete
 
                 var autocompleteWords = completionService.Get(prefix);
 
+                int index = 1;
                 foreach (var word in autocompleteWords)
                 {
-                    Console.WriteLine(word);
+                    Console.WriteLine($"({index++}) {word}");
                 }
 
             }
