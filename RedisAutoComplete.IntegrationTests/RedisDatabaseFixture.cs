@@ -30,12 +30,11 @@ namespace RedisAutoComplete.IntegrationTests
 
             IConnectionMultiplexer connection = ConnectionMultiplexer.Connect("localhost");
 
-            Database = connection.GetDatabase();
-
             // Load sample data
-            IWordService wordService = new FakeWordService();
+            // IWordService wordService = new FakeWordService();
+            IWordService wordService = new FileWordService("female-names.txt");
 
-            completionService = new RedisCompletionService(Database);
+            completionService = new RedisCompletionService(connection);
 
             if (!completionService.Exists)
             {

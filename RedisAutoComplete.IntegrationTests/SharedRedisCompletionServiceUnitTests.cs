@@ -37,5 +37,31 @@ namespace RedisAutoComplete.IntegrationTests
             // Assets
             Assert.All(result, item => Assert.StartsWith(prefix, item));
         }
+
+        [Theory]
+        [InlineData("zo")]        
+        public void Get_Prefix_ShouldReturnsAutocompletedWords3(string prefix)
+        {
+            // Arrange
+
+            // Act
+            var result = fixture.completionService.Get(prefix);
+
+            // Assets
+            var expected = new string[]
+            {
+                "zoe",
+                "zola",
+                "zonda",
+                "zondra",
+                "zonnya",
+                "zora",
+                "zorah",
+                "zorana",
+                "zorina",
+                "zorine",
+            };
+           
+        }
     }
 }
